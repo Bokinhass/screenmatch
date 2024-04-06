@@ -3,6 +3,7 @@ package br.com.alura.screenmatch.principal;
 import br.com.alura.screenmatch.model.DadosSerie;
 import br.com.alura.screenmatch.model.DadosTemporada;
 import br.com.alura.screenmatch.model.Serie;
+import br.com.alura.screenmatch.repository.SerieRepository;
 import br.com.alura.screenmatch.service.ConsumoApi;
 import br.com.alura.screenmatch.service.ConverteDados;
 
@@ -10,7 +11,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
-import java.util.stream.Collectors;
 
 public class Principal {
 
@@ -20,6 +20,13 @@ public class Principal {
   private final ConsumoApi consumo = new ConsumoApi();
   private final ConverteDados conversor = new ConverteDados();
   private final List<DadosSerie> dadosSeries = new ArrayList<>();
+
+
+  private final SerieRepository serieRepository;
+
+  public Principal(SerieRepository serieRepository) {
+    this.serieRepository = serieRepository;
+  }
 
   public void exibeMenu() {
     var opcao = -1;
@@ -58,7 +65,11 @@ public class Principal {
 
   private void buscarSerieWeb() {
     DadosSerie dados = getDadosSerie();
-    dadosSeries.add(dados);
+    Serie serie = new Serie(dados);
+
+    serieRepository.save(serie);
+
+    //dadosSeries.add(dados);
     System.out.println(dados);
   }
 
@@ -83,10 +94,7 @@ public class Principal {
   }
 
   private void listarSeriesBuscadas() {
-    List<Serie> series = new ArrayList<>();
-    series = dadosSeries.stream()
-        .map(d -> new Serie(d))
-        .collect(Collectors.toList());
+    List<Serie> series = serieRepository.findAll();
 
     series.stream()
         .sorted(Comparator.comparing(Serie::getGenero))
